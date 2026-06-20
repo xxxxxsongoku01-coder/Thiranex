@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Weather Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #2b3a42;
+            --accent-color: #3f51b5;
+            --error-color: #d32f2f;
+            --text-color: #333;
+            --bg-color: #f4f6f8;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: lightgreen;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .dashboard-container {
+            background:red;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        .search-form input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-form input:focus {
+            border-color: var(--accent-color);
+        }
+        .search-form button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+        .search-form button:hover {
+            background-color: #303f9f;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .weather-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .temperature {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        .description {
+            font-style: italic;
+            color: #666;
+            margin-top: -5px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 1.5rem;
+            border-top: 1px solid #eee;
+            padding-top: 1.5rem;
+        }
+        .metric-item {
+            background: #fcfcfc;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #f0f0f0;
+        }
+        .metric-item .label {
+            display: block;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
+        .metric-item .value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .status-message {
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+        .status-message.error { color: var(--error-color); }
+        .status-message.loading { color: #555; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Weather Dashboard</h1>
+        <form id="search-form" class="search-form">
+            <input 
+                type="text" 
+                id="city-input" 
+                placeholder="Enter city name (e.g., London)..." 
+                required >
+            <button type="submit">Search</button>
+        </form>
+        <div id="weather-display" class="weather-display hidden">
+            </div>
+        <div id="status-message" class="status-message"></div>
+    </div>
+    <script>
+        const API_CONFIG = {
+            BASE_URL: 'https://api.openweathermap.org/data/2.5/weather',
+            API_KEY: 'YOUR_API_KEY_HERE', 
+            UNITS: 'metric'
+        };
+        const searchForm = document.getElementById('search-form');
+        const cityInput = document.getElementById('city-input');
+        const weatherDisplay = document.getElementById('weather-display');
+        const statusMessage = document.getElementById('status-message');
+        searchForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const cityName = cityInput.value.trim();
+            if (!cityName) return;
+            updateStatus('Fetching weather data...', 'loading');
+            weatherDisplay.classList.add('hidden');
+            weatherDisplay.innerHTML = '';
+            try {
+                const weatherData = await fetchWeatherData(cityName);
+                renderWeather(weatherData);
+                clearStatus();
+            } catch (error) {
+                console.error('Dashboard Error:', error.message);
+                updateStatus(error.message, 'error');
+            }
+        });
+        async function fetchWeatherData(city) {
+            const url = `${API_CONFIG.BASE_URL}?q=${encodeURIComponent(city)}&appid=${API_CONFIG.API_KEY}&units=${API_CONFIG.UNITS}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(`City "${city}" not found. Please check spelling.`);
+                    } else if (response.status === 401) {
+                        throw new Error("Invalid API Key. Please verify your config.");
+                    } else {
+                        throw new Error(`Network response error (Status: ${response.status})`);
+                    }
+                }
+                return await response.json();  
+            } catch (error) {
+                if (error instanceof TypeError) {
+                    throw new Error("Network connection lost. Check your internet connectivity.");
+                }
+                throw error;
+            }
+        }
+        function renderWeather(data) {
+            const { name, main, weather, wind } = data;
+            const { temp, humidity } = main;
+            const { description, icon } = weather[0];
+            const { speed: windSpeed } = wind;
+            weatherDisplay.innerHTML = `
+                <div class="weather-card">
+                    <h2>${name}</h2>
+                    <div class="weather-main">
+                        <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${description}">
+                        <span class="temperature">${Math.round(temp)}°C</span>
+                    </div>
+                    <p class="description">${capitalizeFirstLetter(description)}</p>
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <span class="label">Humidity</span>
+                            <span class="value">${humidity}%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="label">Wind Speed</span>
+                            <span class="value">${windSpeed} m/s</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            weatherDisplay.classList.remove('hidden');
+        }
+        function updateStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+        }
+        function clearStatus() {
+            statusMessage.textContent = '';
+            statusMessage.className = 'status-message';
+        }
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+    </script>
+</body>
+</html>
