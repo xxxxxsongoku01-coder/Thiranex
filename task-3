@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .container {
+            width: 500px;
+            background: skyblue;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        form {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+        }
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ddd;
+            margin-top: 8px;
+            padding: 10px;
+        }
+        .completed span {
+            text-decoration: line-through;
+            color: gray;
+        }
+        .filters {
+            margin: 15px 0;
+        }
+        .active {
+            background: black;
+            color: white;
+        }
+        .actions button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>To-Do List</h2>
+    <form id="todo-form">
+        <input type="text" id="todo-input" placeholder="Enter task" required>
+        <button type="submit">Add</button>
+    </form>
+    <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+    </div>
+    <ul id="todo-list"></ul>
+</div>
+
+<script>
+    let todos = JSON.parse(localStorage.getItem("todos")) || [];
+    let currentFilter = "all";
+
+    const form = document.getElementById("todo-form");
+    const input = document.getElementById("todo-input");
+    const list = document.getElementById("todo-list");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+
+    function saveTodos() {
+        localStorage.setItem("todos", JSON.stringify(todos));
+    }
+
+    function renderTodos() {
+        list.innerHTML = "";
+
+        let filteredTodos = todos;
+
+        if (currentFilter === "active") {
+            filteredTodos = todos.filter(todo => !todo.completed);
+        }
+
+        if (currentFilter === "completed") {
+            filteredTodos = todos.filter(todo => todo.completed);
+        }
+
+        filteredTodos.forEach(todo => {
+            const li = document.createElement("li");
+
+            if (todo.completed) {
+                li.classList.add("completed");
+            }
+
+            li.innerHTML = `
+                <span>${todo.text}</span>
+                <div class="actions">
+                    <button data-action="toggle" data-id="${todo.id}">✓</button>
+                    <button data-action="edit" data-id="${todo.id}">Edit</button>
+                    <button data-action="delete" data-id="${todo.id}">Delete</button>
+                </div>
+            `;
+
+            list.appendChild(li);
+        });
+    }
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const text = input.value.trim();
+
+        if (text === "") return;
+
+        todos.push({
+            id: Date.now(),
+            text: text,
+            completed: false
+        });
+
+        saveTodos();
+        renderTodos();
+        input.value = "";
+    });
+
+    list.addEventListener("click", function(e) {
+        const action = e.target.dataset.action;
+        const id = Number(e.target.dataset.id);
+
+        if (!action) return;
+
+        if (action === "delete") {
+            todos = todos.filter(todo => todo.id !== id);
+        }
+
+        if (action === "toggle") {
+            todos = todos.map(todo =>
+                todo.id === id
+                    ? { ...todo, completed: !todo.completed }
+                    : todo
+            );
+        }
+
+        if (action === "edit") {
+            const todo = todos.find(todo => todo.id === id);
+
+            const newText = prompt("Edit Task:", todo.text);
+
+            if (newText && newText.trim() !== "") {
+                todo.text = newText.trim();
+            }
+        }
+
+        saveTodos();
+        renderTodos();
+    });
+
+    filterButtons.forEach(button => {
+        button.addEventListener("click", function() {
+
+            filterButtons.forEach(btn =>
+                btn.classList.remove("active")
+            );
+
+            this.classList.add("active");
+
+            currentFilter = this.dataset.filter;
+
+            renderTodos();
+        });
+    });
+
+    renderTodos();
+</script>
+
+</body>
+</html>
