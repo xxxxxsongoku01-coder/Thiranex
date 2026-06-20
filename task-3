@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Portfolio</title>
+  <style>
+    :root[data-theme="dark"] {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-accent: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --accent-color: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #38bdf8, #818cf8);
+      --card-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.5);
+      --border-color: #334155;
+    }
+    :root[data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --bg-accent: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent-color: #2563eb;
+      --accent-gradient: linear-gradient(135deg, #2563eb, #1d4ed8);
+      --card-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.1);
+      --border-color: #e2e8f0;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      scroll-behavior: smooth;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      line-height: 1.6;
+    }
+    .theme-switch-container {
+      display: flex;
+      justify-content: flex-end;
+      padding: 1rem 1.5rem;
+      background-color: var(--bg-primary);
+    }
+    #theme-toggle {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      padding: 0.6rem 1.2rem;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    #theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow);
+    }
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: 1fr; 
+      gap: 3rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .main-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+      transition: color 0.2s ease;
+    }
+    .nav-links a:hover {
+      color: var(--accent-color);
+    }
+    .hero-section {
+      display: flex;
+      align-items: center;
+      min-height: 55vh;
+      padding: 1rem 0;
+    }
+    .hero-content h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+    .text-gradient {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-content p {
+      color: var(--text-secondary);
+      font-size: 1.15rem;
+      margin-bottom: 2rem;
+      max-width: 600px;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      padding: 0.8rem 2.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px -10px rgba(56, 189, 248, 0.4);
+    }
+    .section-title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+    .projects-grid {
+      display: grid;
+      /* Automatically scales column counts without breaking layout structures */
+      grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
+      gap: 2rem;
+    }
+    .project-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s ease;
+    }
+    .project-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent-color);
+    }
+    .card-image {
+      height: 200px;
+      background: linear-gradient(45deg, var(--bg-accent), var(--border-color));
+      position: relative;
+    }
+    .card-content {
+      padding: 1.75rem;
+    }
+    .card-content h3 {
+      font-size: 1.35rem;
+      margin-bottom: 0.6rem;
+    }
+    .card-content p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+    .tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .tags span {
+      background-color: var(--bg-primary);
+      color: var(--accent-color);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+    .main-footer {
+      text-align: center;
+      padding: 2.5rem 0;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-color);
+      font-size: 0.95rem;
+    }
+    @media screen and (min-width: 768px) {
+      .main-header {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 2rem 0;
+      }
+      .hero-content h1 {
+        font-size: 3.8rem;
+      }
+      .portfolio-grid {
+        gap: 5rem;
+        padding: 0 2.5rem;
+      }
+    }
+    @media screen and (min-width: 1024px) {
+      .portfolio-grid {
+        padding: 0 4rem;
+      }
+      .hero-section {
+        min-height: 65vh;
+      }
+      .hero-content h1 {
+        font-size: 4.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-switch-container">
+    <button id="theme-toggle" aria-label="Toggle display layout theme">
+      <span>🌓</span> Switch Mode
+    </button>
+  </div>
+  <div class="portfolio-grid">
+    <header class="main-header">
+      <div class="logo">Our project</div>
+      <nav class="nav-links">
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+    <section id="about" class="hero-section">
+      <div class="hero-content">
+        <h1>Easy and  Simple Code. <br><span class="text-gradient">Fluid Architecture.</span></h1>
+        <p>A production-ready portfolio built using multi-dimensional CSS, context Flexbox workflows, and dynamic style tokens.</p>
+        <a href="#projects" class="btn-primary">Explore Metrics</a>
+      </div>
+    </section>
+    <section id="projects" class="projects-section">
+      <h2 class="section-title">Design Showcase</h2>
+      <div class="projects-grid">
+        <article class="project-card">
+          <div class="card-image"></div>
+          <div class="card-content">
+            <h3>Grid-Based Engine</h3>
+            <p>Utilizes complex implicitly placed rows and fractional units to adjust layouts seamlessly dynamically.</p>
+            <div class="tags">
+              <span>CSS Grid</span>
+              <span>Architecture</span>
+            </div>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="card-image"></div>
+          <div class="card-content">
+            <h3>Component Alignment</h3>
+            <p>Isolated component groupings managed exclusively with flexible content box parameters.</p>
+            <div class="tags">
+              <span>Flexbox</span>
+              <span>Micro-UI</span>
+            </div>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="card-image"></div>
+          <div class="card-content">
+            <h3>Dynamic Tokens</h3>
+            <p>Calculates background distributions on the fly via cascading runtime design properties.</p>
+            <div class="tags">
+              <span>Custom Props</span>
+              <span>Themes</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+    <footer id="contact" class="main-footer">
+      <p>&copy; 2026 Architect Portfolio Design. Compiled by CSS3 & HTML5.</p>
+    </footer>
+  </div>
+  <script>
+    const toggleBtn = document.getElementById('theme-toggle');
+    const htmlElement = document.documentElement;
+    toggleBtn.addEventListener('click', () => {
+      const activeTheme = htmlElement.getAttribute('data-theme');
+      const alternateTheme = activeTheme === 'light' ? 'dark' : 'light';
+      htmlElement.setAttribute('data-theme', alternateTheme);
+    });
+  </script>
+</body>
+</html>
